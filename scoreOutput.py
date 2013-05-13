@@ -14,29 +14,23 @@ def threshold(arr, threshold):
 
 def main():
     output = directories.loadImagesInFolder(directories.output)
-    output2 = directories.loadImagesInFolder("outputOpenCV100Iteration/")
     groundTruth = directories.loadImagesInFolder(directories.groundTruth)
     
     print("")
-    print("Name\t\tYour dif.\tOpenCV dif.")
+    print("Name\t\tYour dif")
     
+    l = []
     for outputImage, groundTruthImage in zip(output, groundTruth):
         fname = outputImage[1]
 
-        groundTruthImage = np.asarray(groundTruthImage)[0]
+        groundTruthImage = np.asarray(groundTruthImage[0])
         groundTruthImage = greyscale(groundTruthImage)
         pixelsTotal = groundTruthImage.size
         
         outputImage = np.asarray(outputImage[0])
         outputImage = greyscale(outputImage)
         threshold(outputImage, 150)
-        sizeRatio = (groundTruthImage.shape[0]) / (outputImage.shape[0])
-        outputImage = np.asarray(np.repeat(np.repeat(outputImage, sizeRatio, axis=0), sizeRatio, axis=1))
-        """
-        output2Image = np.asarray(output2Image[0])
-        output2Image = greyscale(output2Image)
-        threshold(output2Image, 150)
-        """
+
         
         if not groundTruthImage.shape == outputImage.shape:
             import pdb; pdb.set_trace()
@@ -45,8 +39,15 @@ def main():
         fractionDifferent = float(pixelsDifferent)/pixelsTotal
         #pixels2Different = np.count_nonzero(output2Image != groundTruthImage)
         
+        #print(fname + ":   \t" + "{:.0%}".format(fractionDifferent))# + ":   \t\t" + "{:.0%}".format(float(pixels2Different)/pixelsTotal))
+        
+        #visualize(outputImage - groundTruthImage)
+        l.append((fractionDifferent, fname))
+        
+    for fractionDifferent, fname in sorted(l):
         print(fname + ":   \t" + "{:.0%}".format(fractionDifferent))# + ":   \t\t" + "{:.0%}".format(float(pixels2Different)/pixelsTotal))
-        visualize(outputImage - groundTruthImage)
+        
+    return l
         
 if __name__ == "__main__":
     main()
