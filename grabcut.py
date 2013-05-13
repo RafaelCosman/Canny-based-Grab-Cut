@@ -13,9 +13,10 @@ import math
 
 import directories
 from visualization import *
+import settings
 
 ImagesAndBBoxes = directories.loadImagesAndBBoxes()
-directories.ensure_dir(directories.output)
+directories.ensureDir(directories.output)
 
 def gaussianBlur(arr, sigma=3):
 	return scipy.ndimage.filters.gaussian_filter(arr, sigma, mode='reflect', cval=0.0)
@@ -55,7 +56,7 @@ def normalizeArr(arr, shift=False):
 def initBinaryEdges(img):
 	edges = np.zeros(img.shape[:2], dtype="float")
 	
-	for apertureSize in [3, 5, 7]:
+	for apertureSize in settings.apertureSizes:
 		for minEdgeStrength in range(0, 500, 50):
 			e = cv2.Canny(image=img, threshold1=2*minEdgeStrength, threshold2=minEdgeStrength, L2gradient=True, apertureSize=apertureSize)
 			#print(minEdgeStrength)
@@ -86,7 +87,8 @@ def initBinaryEdges(img):
 
 		binaryCapacities.append(cap)
 		
-	normalizedCaps = [x * 20.0 for x in normalizeList(binaryCapacities)]
+	normalizedCaps = [cap * settings.binaryEdgeStrength for cap in normalizeList(binaryCapacities)]
+	print(settings.binaryEdgeStrength)
 	
 	assert min(normalizedCaps) >= 0
 	
@@ -160,23 +162,21 @@ def calcMaskUsingMyGrabCut(img, bbox, filename):
 		fgObs = img[mask != 0]
 		bgObs = img[mask == 0]
 
-		numComponents = 10
-		alpha = .002
-		covType = 'full'
+		
 
 		print("Making GMMs...")
-		if len(fgObs) >= numComponents:
+		if len(fgObs) >= settings.numComponents:
 			#Make FG Components
-			fgGMM = sklearn.mixture.DPGMM(n_components=numComponents, alpha=alpha, covariance_type=covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
+			fgGMM = sklearn.mixture.DPGMM(n_components=settings.numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
 			fgGMM.fit(fgObs)
 
 			fgProb = fgGMM.score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
 		else:
 			fgProb = np.zeros(mask.shape)
 
-		if len(bgObs) >= numComponents:
+		if len(bgObs) >= settings.numComponents:
 			#Make BG Components
-			bgGMM = sklearn.mixture.DPGMM(n_components=numComponents, alpha=alpha, covariance_type=covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')    
+			bgGMM = sklearn.mixture.DPGMM(n_components=settings.numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')    
 			bgGMM.fit(bgObs)
 
 			bgProb = bgGMM.score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
@@ -205,6 +205,7 @@ def calcMaskUsingMyGrabCut(img, bbox, filename):
 		unaryTerm = fgProb - bgProb
 		unaryTerm = gaussianBlur(unaryTerm, sigma=3) #Blur the unary term to remove high frequency noise
 		unaryTerm = normalizeArr(unaryTerm, shift=True)
+		unaryTerm += settings.bias
 		"""
 		print("Binary edges range from " + str(min(binaryCapacities)) + " to " + str(max(binaryCapacities)) + "\nwith median of " + str(np.median(binaryCapacities)) + " and average of " + str(np.average(binaryCapacities)))
 		print("Unary edges range from " + str(np.min(unaryTerm)) + " to " + str(np.max(unaryTerm)) + "\nwith median of " + str(np.median(unaryTerm)) + " and average of " + str(np.average(unaryTerm)))		
@@ -286,7 +287,7 @@ def main():
 
 	print("Running GrabCut...")
 
-	for img, bbox, filename in ImagesAndBBoxes[:]:
+	for img, bbox, filename in ImagesAndBBoxes[5:6]:
 		bbox = map(int, bbox)
 		bbox = tuple(bbox)
 

@@ -42,7 +42,7 @@ def loadImagesInFolder(folder):
     
     return zip(images, filenames)
 
-def ensure_dir(d):
+def ensureDir(d):
     if not os.path.exists(d):
         os.makedirs(d)
         

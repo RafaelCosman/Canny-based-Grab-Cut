@@ -14,16 +14,21 @@ def threshold(arr, threshold):
 
 def main():
     output = directories.loadImagesInFolder(directories.output)
+    output = np.asarray(output)
+    
     groundTruth = directories.loadImagesInFolder(directories.groundTruth)
+    groundTruth = np.asarray(groundTruth)
     
     print("")
     print("Name\t\tYour dif")
     
     l = []
-    for outputImage, groundTruthImage in zip(output, groundTruth):
+    for outputImage in output:
+        #Find the corresponding groundTruth image
         fname = outputImage[1]
-
-        groundTruthImage = np.asarray(groundTruthImage[0])
+        groundTruthImage = groundTruth[groundTruth[:, 1] == fname][0][0]
+        
+        #Now compare the output with the ground truth
         groundTruthImage = greyscale(groundTruthImage)
         pixelsTotal = groundTruthImage.size
         
@@ -45,7 +50,7 @@ def main():
         l.append((fractionDifferent, fname))
         
     for fractionDifferent, fname in sorted(l):
-        print(fname + ":   \t" + "{:.0%}".format(fractionDifferent))# + ":   \t\t" + "{:.0%}".format(float(pixels2Different)/pixelsTotal))
+        print(fname + ":   \t" + "{:.1%}".format(fractionDifferent))# + ":   \t\t" + "{:.0%}".format(float(pixels2Different)/pixelsTotal))
         
     return l
         
