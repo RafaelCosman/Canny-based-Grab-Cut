@@ -147,7 +147,7 @@ def removeAllButLargestComponent(mask):
 def fitGMM(obs):
 	numComponents = min(settings.numComponents, len(obs))
 	
-	gmm = sklearn.mixture.DPGMM(n_components=numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
+	gmm = sklearn.mixture.VBGMM(n_components=numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
 	gmm.fit(obs)	
 	
 	return gmm
@@ -165,7 +165,7 @@ def calcMaskUsingMyGrabCut(img, bbox, filename):
 
 	iteration = 0
 	while differenceBetweenTwoMasks(pmask, mask) > .01 or iteration < 3:
-		print(differenceBetweenTwoMasks(pmask, mask))
+		print "Difference between masks", differenceBetweenTwoMasks(pmask, mask)
 		print("Beginning " + filename + " on iteration " + str(iteration))
 
 		pmask = np.copy(mask)

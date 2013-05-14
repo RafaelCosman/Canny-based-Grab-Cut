@@ -13,7 +13,7 @@ bias = 0
 apertureSizes = [3, 5]
 
 #GMM settings
-numGMMs = 1
+numGMMs = 3
 numComponents = 10
 alpha = .002
 covType = 'full'

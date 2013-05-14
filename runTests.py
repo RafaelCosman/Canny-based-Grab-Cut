@@ -21,7 +21,7 @@ def main():
         grabcut.main()
         scores.append(scoreOutput.main())
     """
-    for settings.numGMMs in [1, 2, 3, 4, 5, 6, 7]:
+    for settings.numGMMs in [1, 1, 1, 2, 2]:
         directories.output = "output" + "-" + "numGMMs" + "-" + str(settings.numGMMs) + "/"
         directories.ensureDir(directories.output)
         
