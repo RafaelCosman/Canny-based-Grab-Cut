@@ -276,7 +276,7 @@ def myGrabCut(img, bbox, filename):
 
         scaledUp = sp.misc.imresize(mask, img.shape[:2])
 
-        scaledUp = gaussianBlur(scaledUp, sigma=5)
+        scaledUp = gaussianBlur(scaledUp, sigma=15)
 
         scaledUp = threshold(scaledUp, threshold=150)
 
