@@ -140,6 +140,13 @@ def removeAllButLargestComponent(mask):
 	
 	return mask
 
+def fitGMM(obs):
+	numComponents = min(settings.numComponents, len(obs))
+	
+	gmm = sklearn.mixture.DPGMM(n_components=numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
+	gmm.fit(obs)	
+	
+	return gmm
 
 def calcMaskUsingMyGrabCut(img, bbox, filename):
 	ftype = ".jpg"	
@@ -166,26 +173,15 @@ def calcMaskUsingMyGrabCut(img, bbox, filename):
 
 		print("Making GMMs...")
 		if len(fgObs) >= settings.numComponents:
-			#Make FG Components
-			fgGMM = sklearn.mixture.DPGMM(n_components=settings.numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
-			fgGMM.fit(fgObs)
-
-			fgProb = fgGMM.score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
+			fgProb = fitGMM(fgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
 		else:
 			fgProb = np.zeros(mask.shape)
 
 		if len(bgObs) >= settings.numComponents:
-			#Make BG Components
-			bgGMM = sklearn.mixture.DPGMM(n_components=settings.numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')    
-			bgGMM.fit(bgObs)
-
-			bgProb = bgGMM.score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
+			bgProb = fitGMM(bgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
 		else:
 			bgProb = np.zeros(mask.shape)
-		"""
-		if fgComponents is not None and bgComponents is not None:
-			print("We found " + str(np.max(fgComponents) + 1) + " foreground components, and " + str(np.max(bgComponents) + 1) + " background components")
-		"""
+			
 		#Visualize the image mapped to best components of one gaussian mixture model or the other
 		fgProb = normalizeArr(fgProb)
 		directories.saveArrayAsImage(directories.test + filename + "-" + str(iteration) + "fgProb" + ftype, fgProb)
@@ -268,9 +264,8 @@ def differenceBetweenTwoMasks(m1, m2):
 
 	return np.sum(np.abs(m1 - m2))/float(m1.size)
 
-def myGrabCut(img, bbox, filename):	
-	sizeRatio = 10
-	mask = calcMaskUsingMyGrabCut(img=sp.misc.imresize(img, float(1)/sizeRatio), bbox=[x/sizeRatio for x in bbox], filename=filename)
+def myGrabCut(img, bbox, filename):
+	mask = calcMaskUsingMyGrabCut(img=sp.misc.imresize(img, float(1)/settings.sizeRatio), bbox=[x/settings.sizeRatio for x in bbox], filename=filename)
 	
 	return sp.misc.imresize(mask, img.shape[:2])
 
@@ -283,11 +278,12 @@ def openCVGrabCut(img, bbox):
 	return mask
 
 def main():
-	directories.clearFolder(directories.test)    
+	directories.clearFolder(directories.test)
 
 	print("Running GrabCut...")
 
-	for img, bbox, filename in ImagesAndBBoxes[5:6]:
+	for img, bbox, filename in ImagesAndBBoxes:
+	#for img, bbox, filename in [ImagesAndBBoxes[0], ImagesAndBBoxes[5]]:
 		bbox = map(int, bbox)
 		bbox = tuple(bbox)
 

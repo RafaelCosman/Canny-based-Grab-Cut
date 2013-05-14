@@ -36,9 +36,7 @@ def main():
         outputImage = greyscale(outputImage)
         threshold(outputImage, 150)
 
-        
-        if not groundTruthImage.shape == outputImage.shape:
-            import pdb; pdb.set_trace()
+        assert groundTruthImage.shape == outputImage.shape
         
         pixelsDifferent = np.count_nonzero(outputImage != groundTruthImage)
         fractionDifferent = float(pixelsDifferent)/pixelsTotal
