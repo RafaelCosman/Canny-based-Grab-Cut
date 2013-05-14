@@ -1,3 +1,7 @@
+"""
+directories does all of the io for GrabCut
+"""
+
 import cv2
 import sys
 import os

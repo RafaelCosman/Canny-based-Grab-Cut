@@ -1,17 +1,19 @@
 """
-These are the settings for the grabcut algorithm
+These are the (default) settings for the grabcut algorithm.
+grabcut.py uses these values directly, but note that runTests.py changes these values at runtime.
 """
 
 #General settings
 sizeRatio = 10 #scale the images down by this factor before executing GrabCut
 
 #Unary edge settings
-bias = -.01
+bias = 0
 
 #Canny settings
 apertureSizes = [3, 5]
 
 #GMM settings
+numGMMs = 1
 numComponents = 10
 alpha = .002
 covType = 'full'

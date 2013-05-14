@@ -1,8 +1,12 @@
+"""
+GrabCut algorithm implemented by Rafael Cosman
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 import scipy as sp
 import scipy.ndimage
+import cv2
 
 import sklearn
 from sklearn import mixture
@@ -172,15 +176,15 @@ def calcMaskUsingMyGrabCut(img, bbox, filename):
 		
 
 		print("Making GMMs...")
-		if len(fgObs) >= settings.numComponents:
-			fgProb = fitGMM(fgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
-		else:
-			fgProb = np.zeros(mask.shape)
+		fgProb = np.zeros(mask.shape)
+		if len(fgObs) >= 0:
+			for _ in range(settings.numGMMs):
+				fgProb += fitGMM(fgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
 
-		if len(bgObs) >= settings.numComponents:
-			bgProb = fitGMM(bgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
-		else:
-			bgProb = np.zeros(mask.shape)
+		bgProb = np.zeros(mask.shape)
+		if len(bgObs) > 0:
+			for _ in range(settings.numGMMs):
+				bgProb += fitGMM(bgObs).score(np.asarray(img).reshape(-1, 3)).reshape(mask.shape)
 			
 		#Visualize the image mapped to best components of one gaussian mixture model or the other
 		fgProb = normalizeArr(fgProb)
@@ -282,8 +286,8 @@ def main():
 
 	print("Running GrabCut...")
 
-	for img, bbox, filename in ImagesAndBBoxes:
-	#for img, bbox, filename in [ImagesAndBBoxes[0], ImagesAndBBoxes[5]]:
+	#for img, bbox, filename in ImagesAndBBoxes:
+	for img, bbox, filename in [ImagesAndBBoxes[0], ImagesAndBBoxes[5]]:
 		bbox = map(int, bbox)
 		bbox = tuple(bbox)
 

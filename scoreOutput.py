@@ -1,3 +1,7 @@
+"""
+Scores the output images in the directories.output directory.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
