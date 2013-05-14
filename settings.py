@@ -20,3 +20,4 @@ covType = 'full'
 
 #Binary edge settings
 binaryEdgeStrength = 20.0
+diagonal = True

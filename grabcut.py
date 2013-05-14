@@ -77,16 +77,18 @@ def initBinaryEdges(img):
 	print("Creating binary edges...")
 	verticalEdges = [[(y, x), (y + 1, x)] for x in range(img.shape[1]) for y in range(img.shape[0] - 1)]
 	horisontalEdges = [[(y, x), (y, x + 1)] for x in range(img.shape[1] - 1) for y in range(img.shape[0])]
-	de = [[(y, x), (y + 1, x + 1)] for x in range(img.shape[1] - 1) for y in range(img.shape[0] - 1)]
-	de2 = [[(y, x), (y + 1, x - 1)] for x in range(1, img.shape[1]) for y in range(img.shape[0] - 1)]
-	binaryEdges = horisontalEdges + verticalEdges + de + de2
+	binaryEdges = horisontalEdges + verticalEdges
+	
+	if settings.diagonal:
+		de = [[(y, x), (y + 1, x + 1)] for x in range(img.shape[1] - 1) for y in range(img.shape[0] - 1)]
+		de2 = [[(y, x), (y + 1, x - 1)] for x in range(1, img.shape[1]) for y in range(img.shape[0] - 1)]
+		binaryEdges += de + de2
 
 	binaryCapacities = []
 	for pts in binaryEdges:
 		cap = 1/(edges[pts[0]]+edges[pts[1]] + .001)
 		
 		assert cap >= 0
-		assert cap is not None
 		assert not math.isnan(cap)
 
 		binaryCapacities.append(cap)
@@ -147,7 +149,7 @@ def removeAllButLargestComponent(mask):
 def fitGMM(obs):
 	numComponents = min(settings.numComponents, len(obs))
 	
-	gmm = sklearn.mixture.VBGMM(n_components=numComponents, alpha=settings.alpha, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
+	gmm = sklearn.mixture.VBGMM(n_components=numComponents, covariance_type=settings.covType, random_state=None, thresh=0.001, min_covar=0.001, n_iter=10, params='wmc', init_params='wmc')
 	gmm.fit(obs)	
 	
 	return gmm
@@ -286,8 +288,8 @@ def main():
 
 	print("Running GrabCut...")
 
-	#for img, bbox, filename in ImagesAndBBoxes:
-	for img, bbox, filename in [ImagesAndBBoxes[0], ImagesAndBBoxes[5]]:
+	for img, bbox, filename in ImagesAndBBoxes:
+	#for img, bbox, filename in [ImagesAndBBoxes[0], ImagesAndBBoxes[5]]:
 		bbox = map(int, bbox)
 		bbox = tuple(bbox)
 
